@@ -1,92 +1,126 @@
-"""Utility functions for common operations"""
-from django.core.paginator import Paginator
-from .constants import DEFAULT_PAGE_SIZE
+"""
+Utility functions cho ứng dụng Tìm Trọ
+Các hàm tiện ích dùng chung trong toàn bộ ứng dụng
+"""
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import F
+from .models import MotelImage, Favorite
 
 
-def paginate_queryset(queryset, request, per_page=DEFAULT_PAGE_SIZE):
+def paginate_queryset(queryset, request, per_page=12):
     """
-    Paginate a queryset.
+    Phân trang cho queryset
     
     Args:
-        queryset: Django QuerySet to paginate
-        request: HttpRequest object
-        per_page: Number of items per page (default: 12)
+        queryset: QuerySet cần phân trang
+        request: HTTP request (để lấy số trang từ GET params)
+        per_page: Số item mỗi trang (mặc định 12)
     
     Returns:
-        Page object from Paginator
+        Page object chứa dữ liệu đã phân trang
     """
     paginator = Paginator(queryset, per_page)
-    page_number = request.GET.get('page')
-    return paginator.get_page(page_number)
+    page = request.GET.get('page', 1)
+    
+    try:
+        page_obj = paginator.page(page)
+    except PageNotAnInteger:
+        # Nếu page không phải số, trả về trang 1
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        # Nếu page vượt quá số trang, trả về trang cuối
+        page_obj = paginator.page(paginator.num_pages)
+    
+    return page_obj
 
 
-def handle_image_upload(motel_room, files, set_first_primary=True):
+def handle_image_upload(motel_room, images, set_first_primary=True):
     """
-    Handle multiple image uploads for a motel room.
+    Xử lý upload nhiều hình ảnh cho phòng trọ
     
     Args:
-        motel_room: MotelRoom instance
-        files: List of uploaded image files
-        set_first_primary: Set first image as primary (default: True)
+        motel_room: Instance của MotelRoom
+        images: List các file ảnh từ request.FILES
+        set_first_primary: Đặt ảnh đầu tiên làm ảnh chính (mặc định True)
     
     Returns:
-        List of created MotelImage instances
+        List các MotelImage đã tạo
     """
-    from .models import MotelImage
+    created_images = []
     
-    images = []
-    for idx, image_file in enumerate(files):
-        is_primary = (idx == 0) if set_first_primary else False
-        image = MotelImage.objects.create(
+    for index, image in enumerate(images):
+        # Ảnh đầu tiên là ảnh chính (nếu set_first_primary=True)
+        is_primary = (index == 0) and set_first_primary
+        
+        motel_image = MotelImage.objects.create(
             motel_room=motel_room,
-            image=image_file,
+            image=image,
             is_primary=is_primary
         )
-        images.append(image)
-    return images
+        created_images.append(motel_image)
+    
+    return created_images
 
 
 def increment_views(motel_room):
     """
-    Increment view count for a motel room atomically.
+    Tăng lượt xem cho phòng trọ
+    Sử dụng F() expression để tránh race condition
     
     Args:
-        motel_room: MotelRoom instance
-    
-    Returns:
-        Updated view count
+        motel_room: Instance của MotelRoom
     """
-    from django.db.models import F
+    # Sử dụng update với F() để atomic increment
     from .models import MotelRoom
-    
     MotelRoom.objects.filter(pk=motel_room.pk).update(views=F('views') + 1)
-    motel_room.refresh_from_db(fields=['views'])
-    return motel_room.views
 
 
 def get_favorited_room_ids(user, room_ids):
     """
-    Get favorited room IDs for a user.
+    Lấy danh sách ID phòng trọ mà user đã yêu thích
+    Dùng để hiển thị trạng thái yêu thích trên danh sách phòng
     
     Args:
-        user: User instance (có thể là AnonymousUser)
-        room_ids: List/QuerySet of room IDs to check
+        user: User hiện tại (có thể là AnonymousUser)
+        room_ids: List các ID phòng trọ cần kiểm tra
     
     Returns:
-        Set of favorited room IDs
+        Set các ID phòng đã yêu thích (rỗng nếu chưa đăng nhập)
     """
-    from .models import Favorite
-    
-    if not user.is_authenticated or not room_ids:
+    if not user.is_authenticated:
         return set()
     
-    if not isinstance(room_ids, (list, tuple, set)):
-        room_ids = list(room_ids)
+    # Query một lần để lấy tất cả favorites
+    favorited_ids = Favorite.objects.filter(
+        user=user,
+        motel_room_id__in=room_ids
+    ).values_list('motel_room_id', flat=True)
     
-    if not room_ids:
-        return set()
+    return set(favorited_ids)
+
+
+def format_price(price):
+    """
+    Format giá tiền theo định dạng Việt Nam
     
-    return set(
-        Favorite.objects.filter(user=user, motel_room_id__in=room_ids)
-        .values_list('motel_room_id', flat=True)
-    )
+    Args:
+        price: Số tiền (Decimal hoặc int)
+    
+    Returns:
+        String đã format (VD: "2,500,000 VNĐ")
+    """
+    return f"{price:,.0f} VNĐ"
+
+
+def format_area(area):
+    """
+    Format diện tích
+    
+    Args:
+        area: Diện tích (Decimal hoặc float)
+    
+    Returns:
+        String đã format (VD: "25.5 m²")
+    """
+    return f"{area} m²"

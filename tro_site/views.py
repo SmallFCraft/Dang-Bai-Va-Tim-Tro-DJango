@@ -1,3 +1,8 @@
+"""
+Views cho ứng dụng Tìm Trọ
+Xử lý các request HTTP và trả về response tương ứng
+"""
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -19,14 +24,27 @@ from .constants import (
 )
 
 
+# =============================================================================
+# TRANG CHỦ
+# =============================================================================
+
 def home(request):
-    """Homepage with featured and latest listings"""
+    """
+    Trang chủ - Hiển thị phòng trọ nổi bật và mới nhất
+    """
+    # Lấy phòng trọ nổi bật (tối đa 6)
     featured_rooms = MotelRoom.objects.featured()[:6]
+    
+    # Lấy phòng trọ mới nhất (tối đa 12)
     latest_rooms = MotelRoom.objects.latest(12)
+    
+    # Lấy danh sách quận/huyện có phòng trọ (tối đa 8)
     districts = District.objects.with_room_count()[:8]
+    
+    # Lấy danh sách danh mục
     categories = Category.objects.with_room_count()
     
-    # Get favorited room IDs for authenticated users
+    # Lấy danh sách ID phòng đã yêu thích (nếu đã đăng nhập)
     all_room_ids = [room.id for room in list(featured_rooms) + list(latest_rooms)]
     favorited_room_ids = get_favorited_room_ids(request.user, all_room_ids)
     
@@ -40,13 +58,20 @@ def home(request):
     return render(request, 'home.html', context)
 
 
+# =============================================================================
+# PHÒNG TRỌ - DANH SÁCH & CHI TIẾT
+# =============================================================================
+
 def motel_list(request):
-    """List all approved motel rooms with search and filters"""
+    """
+    Danh sách phòng trọ - Hỗ trợ tìm kiếm và lọc nâng cao
+    """
     form = MotelSearchForm(request.GET)
     rooms = MotelRoom.objects.approved_with_relations()
     
-    # Apply filters
+    # Áp dụng bộ lọc nếu form hợp lệ
     if form.is_valid():
+        # Lọc theo từ khóa (tiêu đề, mô tả, địa chỉ)
         if q := form.cleaned_data.get('q'):
             rooms = rooms.filter(
                 Q(title__icontains=q) | 
@@ -54,28 +79,32 @@ def motel_list(request):
                 Q(address__icontains=q)
             )
         
+        # Lọc theo quận/huyện
         if district := form.cleaned_data.get('district'):
             rooms = rooms.filter(district=district)
         
+        # Lọc theo danh mục
         if category := form.cleaned_data.get('category'):
             rooms = rooms.filter(category=category)
         
+        # Lọc theo khoảng giá
         if price_min := form.cleaned_data.get('price_min'):
             rooms = rooms.filter(price__gte=price_min)
         
         if price_max := form.cleaned_data.get('price_max'):
             rooms = rooms.filter(price__lte=price_max)
         
+        # Lọc theo diện tích
         if area_min := form.cleaned_data.get('area_min'):
             rooms = rooms.filter(area__gte=area_min)
         
         if area_max := form.cleaned_data.get('area_max'):
             rooms = rooms.filter(area__lte=area_max)
     
-    # Pagination
+    # Phân trang kết quả
     page_obj = paginate_queryset(rooms, request, per_page=DEFAULT_PAGE_SIZE)
     
-    # Get favorited room IDs for authenticated users
+    # Lấy danh sách ID phòng đã yêu thích
     room_ids = [room.id for room in page_obj.object_list] if page_obj else []
     favorited_room_ids = get_favorited_room_ids(request.user, room_ids)
     
@@ -89,7 +118,10 @@ def motel_list(request):
 
 
 def motel_detail(request, slug):
-    """Motel room detail page"""
+    """
+    Chi tiết phòng trọ - Hiển thị thông tin đầy đủ của một phòng
+    """
+    # Lấy phòng trọ với các quan hệ liên quan
     room = get_object_or_404(
         MotelRoom.objects.select_related('district', 'category', 'owner')
         .prefetch_related('images', 'utilities'),
@@ -97,28 +129,28 @@ def motel_detail(request, slug):
         status=MOTEL_STATUS_APPROVED
     )
     
-    # Increment views
+    # Tăng lượt xem
     increment_views(room)
     
-    # Check if user favorited
+    # Kiểm tra trạng thái yêu thích và đánh giá của user
     is_favorited = False
     user_review = None
     if request.user.is_authenticated:
         is_favorited = Favorite.objects.filter(user=request.user, motel_room=room).exists()
         user_review = Review.objects.filter(user=request.user, motel_room=room).first()
     
-    # Get reviews with rating stats
+    # Lấy danh sách đánh giá và thống kê
     reviews = room.reviews.select_related('user').order_by('-created_at')
     avg_rating = reviews.aggregate(Avg('rating'))['rating__avg']
     review_count = reviews.count()
     
-    # Related rooms
+    # Lấy phòng trọ liên quan (cùng quận/huyện)
     related_rooms = MotelRoom.objects.filter(
         status=MOTEL_STATUS_APPROVED,
         district=room.district
     ).exclude(id=room.id).select_related('district', 'category')[:4]
     
-    # Get favorited room IDs for related rooms
+    # Lấy danh sách ID phòng đã yêu thích
     related_room_ids = [r.id for r in related_rooms]
     favorited_room_ids = get_favorited_room_ids(request.user, related_room_ids)
     
@@ -135,33 +167,51 @@ def motel_detail(request, slug):
     return render(request, 'motel/detail.html', context)
 
 
+# =============================================================================
+# PHÒNG TRỌ - QUẢN LÝ TIN ĐĂNG
+# =============================================================================
+
 @login_required
 def motel_create(request):
-    """Create new motel listing"""
+    """
+    Đăng tin mới - Tạo tin đăng phòng trọ
+    Tự động điền thông tin liên hệ từ profile user
+    """
+    user = request.user
+    
+    # Điền sẵn thông tin liên hệ từ profile
+    initial_data = {
+        'contact_name': user.get_full_name() or user.username,
+        'contact_phone': user.phone or '',
+        'contact_email': user.email or '',
+    }
+    
     if request.method == 'POST':
         form = MotelRoomForm(request.POST)
         if form.is_valid():
             room = form.save(commit=False)
-            room.owner = request.user
-            room.status = MOTEL_STATUS_PENDING  # Pending approval
+            room.owner = user
+            room.status = MOTEL_STATUS_PENDING  # Chờ duyệt
             room.save()
-            form.save_m2m()
+            form.save_m2m()  # Lưu quan hệ many-to-many (tiện ích)
             
-            # Handle image uploads
+            # Xử lý upload hình ảnh
             images = request.FILES.getlist('images')
             handle_image_upload(room, images)
             
             messages.success(request, 'Đăng tin thành công! Tin của bạn đang chờ duyệt.')
             return redirect('motel_my_listings')
     else:
-        form = MotelRoomForm()
+        form = MotelRoomForm(initial=initial_data)
     
     return render(request, 'motel/create.html', {'form': form})
 
 
 @login_required
 def motel_edit(request, slug):
-    """Edit existing motel listing"""
+    """
+    Chỉnh sửa tin đăng - Chỉ chủ sở hữu mới được sửa
+    """
     room = get_object_or_404(MotelRoom, slug=slug, owner=request.user)
     
     if request.method == 'POST':
@@ -169,7 +219,7 @@ def motel_edit(request, slug):
         if form.is_valid():
             form.save()
             
-            # Handle new image uploads
+            # Xử lý upload hình ảnh mới (không đặt ảnh đầu làm ảnh chính)
             images = request.FILES.getlist('images')
             handle_image_upload(room, images, set_first_primary=False)
             
@@ -187,7 +237,9 @@ def motel_edit(request, slug):
 
 @login_required
 def motel_delete(request, slug):
-    """Delete motel listing"""
+    """
+    Xóa tin đăng - Yêu cầu xác nhận trước khi xóa
+    """
     room = get_object_or_404(MotelRoom, slug=slug, owner=request.user)
     
     if request.method == 'POST':
@@ -200,7 +252,9 @@ def motel_delete(request, slug):
 
 @login_required
 def motel_my_listings(request):
-    """User's own motel listings"""
+    """
+    Tin đăng của tôi - Danh sách tin đăng của user hiện tại
+    """
     rooms = MotelRoom.objects.filter(
         owner=request.user
     ).select_related('district', 'category').prefetch_related('images').order_by('-created_at')
@@ -213,12 +267,19 @@ def motel_my_listings(request):
     return render(request, 'motel/my_listings.html', context)
 
 
+# =============================================================================
+# BÁO CÁO VI PHẠM
+# =============================================================================
+
 @login_required
 def report_create(request, slug):
-    """Report inappropriate listing"""
+    """
+    Báo cáo tin đăng vi phạm
+    Mỗi user chỉ được báo cáo 1 lần cho mỗi tin
+    """
     room = get_object_or_404(MotelRoom, slug=slug, status=MOTEL_STATUS_APPROVED)
     
-    # Check if user already reported this room
+    # Kiểm tra đã báo cáo chưa
     if Report.objects.filter(motel_room=room, reporter=request.user).exists():
         messages.warning(request, 'Bạn đã báo cáo tin đăng này rồi!')
         return redirect('motel_detail', slug=slug)
@@ -243,15 +304,23 @@ def report_create(request, slug):
     return render(request, 'motel/report.html', context)
 
 
+# =============================================================================
+# TRANG CÁ NHÂN
+# =============================================================================
+
 @login_required
 def profile_view(request, username):
-    """View user profile"""
+    """
+    Xem trang cá nhân - Hiển thị thông tin và tin đăng của user
+    """
     user = get_object_or_404(User, username=username)
+    
+    # Lấy tin đăng đã duyệt của user (tối đa 6)
     rooms = MotelRoom.objects.filter(
         owner=user, status=MOTEL_STATUS_APPROVED
     ).select_related('district', 'category').prefetch_related('images')[:6]
     
-    # Get favorited room IDs for authenticated users
+    # Lấy danh sách ID phòng đã yêu thích
     room_ids = [room.id for room in rooms]
     favorited_room_ids = get_favorited_room_ids(request.user, room_ids)
     
@@ -265,7 +334,9 @@ def profile_view(request, username):
 
 @login_required
 def profile_edit(request):
-    """Edit user profile"""
+    """
+    Chỉnh sửa thông tin cá nhân
+    """
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
@@ -278,11 +349,17 @@ def profile_edit(request):
     return render(request, 'user/profile_edit.html', {'form': form})
 
 
-# AJAX endpoints
+# =============================================================================
+# API AJAX - QUẢN LÝ HÌNH ẢNH
+# =============================================================================
+
 @require_POST
 @login_required
 def image_delete(request, image_id):
-    """Delete motel image via AJAX"""
+    """
+    Xóa hình ảnh phòng trọ (AJAX)
+    Chỉ chủ sở hữu mới được xóa
+    """
     image = get_object_or_404(MotelImage, id=image_id, motel_room__owner=request.user)
     image.delete()
     return JsonResponse({'success': True})
@@ -291,78 +368,100 @@ def image_delete(request, image_id):
 @require_POST
 @login_required
 def image_set_primary(request, image_id):
-    """Set image as primary via AJAX"""
+    """
+    Đặt hình ảnh làm ảnh chính (AJAX)
+    """
     image = get_object_or_404(MotelImage, id=image_id, motel_room__owner=request.user)
     
-    # Remove primary from other images
+    # Bỏ đánh dấu ảnh chính của các ảnh khác
     MotelImage.objects.filter(motel_room=image.motel_room).update(is_primary=False)
     
-    # Set this as primary
+    # Đặt ảnh này làm ảnh chính
     image.is_primary = True
     image.save()
     
     return JsonResponse({'success': True})
 
 
+# =============================================================================
+# DANH MỤC & KHU VỰC
+# =============================================================================
+
 def district_list(request):
-    """List all districts with room counts"""
+    """
+    Danh sách quận/huyện - Hiển thị kèm số lượng phòng trọ
+    """
     districts = District.objects.with_room_count()
-    
     return render(request, 'district/list.html', {'districts': districts})
 
 
 def category_list(request):
-    """List all categories with room counts"""
+    """
+    Danh sách danh mục - Hiển thị kèm số lượng phòng trọ
+    """
     categories = Category.objects.with_room_count()
-    
     return render(request, 'category/list.html', {'categories': categories})
 
 
+# =============================================================================
+# TRANG LỖI TÙY CHỈNH
+# =============================================================================
+
 def custom_404(request, exception):
-    """Custom 404 error handler"""
+    """Trang lỗi 404 - Không tìm thấy"""
     return render(request, 'errors/404.html', status=404)
 
 
 def custom_500(request):
-    """Custom 500 error handler"""
+    """Trang lỗi 500 - Lỗi máy chủ"""
     return render(request, 'errors/500.html', status=500)
 
 
-# Test views for error pages (only in development)
 def test_404_view(request):
-    """Test view to preview 404 page"""
+    """View test trang 404 (chỉ dùng trong development)"""
     return render(request, 'errors/404.html', status=404)
 
 
 def test_500_view(request):
-    """Test view to preview 500 page"""
+    """View test trang 500 (chỉ dùng trong development)"""
     return render(request, 'errors/500.html', status=500)
 
 
-# ============================================================================
-# FAVORITE VIEWS
-# ============================================================================
+# =============================================================================
+# YÊU THÍCH
+# =============================================================================
 
 @login_required
 @require_POST
 def favorite_toggle(request, slug):
-    """Toggle favorite status for a motel room (AJAX)"""
+    """
+    Thêm/xóa yêu thích (AJAX)
+    Nếu đã yêu thích thì xóa, chưa thì thêm
+    """
     room = get_object_or_404(MotelRoom, slug=slug, status=MOTEL_STATUS_APPROVED)
     favorite, created = Favorite.objects.get_or_create(user=request.user, motel_room=room)
     
     if not created:
+        # Đã tồn tại -> xóa
         favorite.delete()
         return JsonResponse({'favorited': False, 'message': 'Đã xóa khỏi yêu thích'})
     
+    # Mới tạo -> đã thêm
     return JsonResponse({'favorited': True, 'message': 'Đã thêm vào yêu thích'})
 
 
 @login_required
 def favorite_list(request):
-    """List user's favorite motel rooms"""
+    """
+    Danh sách yêu thích - Các phòng trọ user đã lưu
+    """
     favorites = Favorite.objects.filter(
         user=request.user
-    ).select_related('motel_room__district', 'motel_room__category', 'motel_room__owner').prefetch_related('motel_room__images')
+    ).select_related(
+        'motel_room__district', 
+        'motel_room__category', 
+        'motel_room__owner'
+    ).prefetch_related('motel_room__images')
     
     page_obj = paginate_queryset(favorites, request, per_page=DEFAULT_PAGE_SIZE)
     
@@ -372,16 +471,19 @@ def favorite_list(request):
     return render(request, 'motel/favorites.html', context)
 
 
-# ============================================================================
-# REVIEW VIEWS
-# ============================================================================
+# =============================================================================
+# ĐÁNH GIÁ
+# =============================================================================
 
 @login_required
 def review_create(request, slug):
-    """Create or update review for a motel room"""
+    """
+    Tạo/cập nhật đánh giá
+    Mỗi user chỉ được đánh giá 1 lần cho mỗi phòng (có thể sửa)
+    """
     room = get_object_or_404(MotelRoom, slug=slug, status=MOTEL_STATUS_APPROVED)
     
-    # Check if user already reviewed
+    # Kiểm tra đánh giá đã tồn tại
     existing_review = Review.objects.filter(user=request.user, motel_room=room).first()
     
     if request.method == 'POST':
@@ -408,7 +510,9 @@ def review_create(request, slug):
 @login_required
 @require_POST
 def review_delete(request, review_id):
-    """Delete user's own review"""
+    """
+    Xóa đánh giá - Chỉ chủ sở hữu mới được xóa
+    """
     review = get_object_or_404(Review, id=review_id, user=request.user)
     slug = review.motel_room.slug
     review.delete()

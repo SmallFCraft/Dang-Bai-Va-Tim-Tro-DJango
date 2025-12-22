@@ -237,6 +237,62 @@ textarea.form-control {
     pointer-events: none;
 }
 
+/* Primary Badge for first image */
+.preview-item .primary-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #06BBCC, #059aaa);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    text-align: center;
+}
+
+/* Valid field styling */
+.form-control.is-valid,
+.form-select.is-valid {
+    border-color: #198754;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+/* Toast container styling */
+.toast-container {
+    z-index: 9999 !important;
+}
+
+.toast-container .toast {
+    min-width: 300px;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.toast-container .toast .toast-body {
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem;
+}
+
+.toast-container .toast .btn-close {
+    filter: brightness(0) invert(1);
+}
+
 /* Error Styling */
 .invalid-feedback {
     display: block;

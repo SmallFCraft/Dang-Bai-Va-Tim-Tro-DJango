@@ -1,3 +1,8 @@
+"""
+Models cho ứng dụng Tìm Trọ
+Định nghĩa cấu trúc dữ liệu và quan hệ giữa các bảng
+"""
+
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -12,10 +17,26 @@ from .constants import (
 )
 
 
+# =============================================================================
+# MODEL NGƯỜI DÙNG
+# =============================================================================
+
 class User(AbstractUser):
-    """Extended User model with additional fields"""
-    role = models.IntegerField(choices=USER_ROLES, default=0, verbose_name='Vai trò')
-    phone = models.CharField(max_length=15, blank=True, null=True, verbose_name='Số điện thoại')
+    """
+    Model người dùng mở rộng từ AbstractUser
+    Thêm các trường: vai trò, số điện thoại, avatar, bio, địa chỉ
+    """
+    role = models.IntegerField(
+        choices=USER_ROLES, 
+        default=0, 
+        verbose_name='Vai trò'
+    )
+    phone = models.CharField(
+        max_length=15, 
+        blank=True, 
+        null=True, 
+        verbose_name='Số điện thoại'
+    )
     avatar = ProcessedImageField(
         upload_to="avatars/",
         processors=[ResizeToFill(300, 300)],
@@ -25,12 +46,25 @@ class User(AbstractUser):
         null=True,
         verbose_name="Ảnh đại diện",
     )
-    bio = models.TextField(blank=True, null=True, verbose_name="Giới thiệu")
-    address = models.CharField(
-        max_length=255, blank=True, null=True, verbose_name="Địa chỉ"
+    bio = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name="Giới thiệu"
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tạo")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Ngày cập nhật")
+    address = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        verbose_name="Địa chỉ"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name="Ngày tạo"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True, 
+        verbose_name="Ngày cập nhật"
+    )
 
     class Meta:
         verbose_name = "Người dùng"
@@ -42,25 +76,55 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
+        """Kiểm tra user có phải admin không (role = 1)"""
         return self.role == 1
 
 
+# =============================================================================
+# QUERYSET TÙY CHỈNH CHO QUẬN/HUYỆN VÀ DANH MỤC
+# =============================================================================
+
 class LocationQuerySet(models.QuerySet):
-    """Custom QuerySet for District and Category models"""
+    """QuerySet tùy chỉnh cho District và Category"""
     
     def with_room_count(self):
-        """Annotate with approved room count"""
+        """Đếm số phòng trọ đã duyệt trong mỗi quận/danh mục"""
         return self.annotate(
-            room_count=models.Count('motel_rooms', filter=models.Q(motel_rooms__status=MOTEL_STATUS_APPROVED))
+            room_count=models.Count(
+                'motel_rooms', 
+                filter=models.Q(motel_rooms__status=MOTEL_STATUS_APPROVED)
+            )
         ).filter(room_count__gt=0)
 
 
+# =============================================================================
+# MODEL QUẬN/HUYỆN
+# =============================================================================
+
 class District(models.Model):
-    """Districts/Areas for location filtering"""
-    name = models.CharField(max_length=100, unique=True, verbose_name='Tên quận/huyện')
-    slug = models.SlugField(max_length=120, unique=True, blank=True, verbose_name='Slug')
-    description = models.TextField(blank=True, null=True, verbose_name='Mô tả')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
+    """
+    Model quận/huyện - Dùng để lọc phòng trọ theo vị trí
+    """
+    name = models.CharField(
+        max_length=100, 
+        unique=True, 
+        verbose_name='Tên quận/huyện'
+    )
+    slug = models.SlugField(
+        max_length=120, 
+        unique=True, 
+        blank=True, 
+        verbose_name='Slug'
+    )
+    description = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name='Mô tả'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name='Ngày tạo'
+    )
 
     objects = LocationQuerySet.as_manager()
 
@@ -70,6 +134,7 @@ class District(models.Model):
         ordering = ["name"]
 
     def save(self, *args, **kwargs):
+        """Tự động tạo slug từ tên nếu chưa có"""
         if not self.slug:
             self.slug = unicode_slugify(self.name)
         super().save(*args, **kwargs)
@@ -78,13 +143,41 @@ class District(models.Model):
         return self.name
 
 
+# =============================================================================
+# MODEL DANH MỤC
+# =============================================================================
+
 class Category(models.Model):
-    """Room categories (Phòng trọ, Chung cư mini, Nhà nguyên căn, etc.)"""
-    name = models.CharField(max_length=100, unique=True, verbose_name='Tên loại')
-    slug = models.SlugField(max_length=120, unique=True, blank=True, verbose_name='Slug')
-    description = models.TextField(blank=True, null=True, verbose_name='Mô tả')
-    icon = models.CharField(max_length=50, blank=True, null=True, verbose_name='Icon class')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Ngày tạo')
+    """
+    Model danh mục phòng trọ
+    Ví dụ: Phòng trọ, Chung cư mini, Nhà nguyên căn, v.v.
+    """
+    name = models.CharField(
+        max_length=100, 
+        unique=True, 
+        verbose_name='Tên loại'
+    )
+    slug = models.SlugField(
+        max_length=120, 
+        unique=True, 
+        blank=True, 
+        verbose_name='Slug'
+    )
+    description = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name='Mô tả'
+    )
+    icon = models.CharField(
+        max_length=50, 
+        blank=True, 
+        null=True, 
+        verbose_name='Icon class'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name='Ngày tạo'
+    )
 
     objects = LocationQuerySet.as_manager()
 
@@ -94,6 +187,7 @@ class Category(models.Model):
         ordering = ["name"]
 
     def save(self, *args, **kwargs):
+        """Tự động tạo slug từ tên nếu chưa có"""
         if not self.slug:
             self.slug = unicode_slugify(self.name)
         super().save(*args, **kwargs)
@@ -102,14 +196,30 @@ class Category(models.Model):
         return self.name
 
 
-class Utility(models.Model):
-    """Utilities/Amenities (Wifi, Điều hòa, Máy giặt, etc.)"""
+# =============================================================================
+# MODEL TIỆN ÍCH
+# =============================================================================
 
-    name = models.CharField(max_length=100, unique=True, verbose_name="Tên tiện ích")
-    icon = models.CharField(
-        max_length=50, blank=True, null=True, verbose_name="Icon class"
+class Utility(models.Model):
+    """
+    Model tiện ích phòng trọ
+    Ví dụ: Wifi, Điều hòa, Máy giặt, Tủ lạnh, v.v.
+    """
+    name = models.CharField(
+        max_length=100, 
+        unique=True, 
+        verbose_name="Tên tiện ích"
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tạo")
+    icon = models.CharField(
+        max_length=50, 
+        blank=True, 
+        null=True, 
+        verbose_name="Icon class"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name="Ngày tạo"
+    )
 
     class Meta:
         verbose_name = "Tiện ích"
@@ -120,59 +230,85 @@ class Utility(models.Model):
         return self.name
 
 
+# =============================================================================
+# QUERYSET VÀ MANAGER CHO PHÒNG TRỌ
+# =============================================================================
+
 class MotelRoomQuerySet(models.QuerySet):
-    """Custom QuerySet for MotelRoom model"""
+    """QuerySet tùy chỉnh cho MotelRoom với các phương thức tiện ích"""
     
     def approved(self):
-        """Get all approved rooms"""
+        """Lấy tất cả phòng trọ đã duyệt"""
         return self.filter(status=MOTEL_STATUS_APPROVED)
     
     def with_relations(self):
-        """Prefetch common relations"""
+        """Prefetch các quan hệ thường dùng để tối ưu query"""
         return self.select_related(
             'district', 'category', 'owner'
         ).prefetch_related('images', 'utilities')
     
     def approved_with_relations(self):
-        """Common queryset for approved rooms with relations"""
+        """Kết hợp: phòng đã duyệt + prefetch quan hệ"""
         return self.approved().with_relations()
     
     def featured(self):
-        """Get featured approved rooms"""
+        """Lấy phòng trọ nổi bật đã duyệt"""
         return self.approved().filter(is_featured=True).with_relations()
 
 
 class MotelRoomManager(models.Manager):
-    """Custom Manager for MotelRoom model"""
+    """Manager tùy chỉnh cho MotelRoom"""
     
     def get_queryset(self):
         return MotelRoomQuerySet(self.model, using=self._db)
     
     def approved(self):
+        """Lấy phòng đã duyệt"""
         return self.get_queryset().approved()
     
     def with_relations(self):
+        """Lấy phòng kèm quan hệ"""
         return self.get_queryset().with_relations()
     
     def approved_with_relations(self):
+        """Lấy phòng đã duyệt kèm quan hệ"""
         return self.get_queryset().approved_with_relations()
     
     def featured(self):
+        """Lấy phòng nổi bật"""
         return self.get_queryset().featured()
     
     def latest(self, limit=12):
+        """Lấy phòng mới nhất (mặc định 12 phòng)"""
         return self.approved_with_relations()[:limit]
 
 
-class MotelRoom(models.Model):
-    """Main motel room listing model"""
-    
-    # Basic Information
-    title = models.CharField(max_length=255, verbose_name='Tiêu đề')
-    slug = models.SlugField(max_length=300, unique=True, blank=True, verbose_name='Slug')
-    description = models.TextField(verbose_name='Mô tả chi tiết')
+# =============================================================================
+# MODEL PHÒNG TRỌ
+# =============================================================================
 
-    # Pricing & Area
+class MotelRoom(models.Model):
+    """
+    Model phòng trọ - Bảng chính lưu thông tin tin đăng
+    Bao gồm: thông tin cơ bản, giá, vị trí, tiện ích, liên hệ, trạng thái
+    """
+    
+    # --- Thông tin cơ bản ---
+    title = models.CharField(
+        max_length=255, 
+        verbose_name='Tiêu đề'
+    )
+    slug = models.SlugField(
+        max_length=300, 
+        unique=True, 
+        blank=True, 
+        verbose_name='Slug'
+    )
+    description = models.TextField(
+        verbose_name='Mô tả chi tiết'
+    )
+
+    # --- Giá và diện tích ---
     price = models.DecimalField(
         max_digits=12,
         decimal_places=0,
@@ -186,8 +322,11 @@ class MotelRoom(models.Model):
         verbose_name="Diện tích (m²)",
     )
 
-    # Location
-    address = models.CharField(max_length=255, verbose_name="Địa chỉ")
+    # --- Vị trí ---
+    address = models.CharField(
+        max_length=255, 
+        verbose_name="Địa chỉ"
+    )
     district = models.ForeignKey(
         District,
         on_delete=models.SET_NULL,
@@ -196,13 +335,21 @@ class MotelRoom(models.Model):
         verbose_name="Quận/Huyện",
     )
     latitude = models.DecimalField(
-        max_digits=10, decimal_places=8, blank=True, null=True, verbose_name="Vĩ độ"
+        max_digits=10, 
+        decimal_places=8, 
+        blank=True, 
+        null=True, 
+        verbose_name="Vĩ độ"
     )
     longitude = models.DecimalField(
-        max_digits=11, decimal_places=8, blank=True, null=True, verbose_name="Kinh độ"
+        max_digits=11, 
+        decimal_places=8, 
+        blank=True, 
+        null=True, 
+        verbose_name="Kinh độ"
     )
 
-    # Category & Utilities
+    # --- Danh mục và tiện ích ---
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -211,15 +358,28 @@ class MotelRoom(models.Model):
         verbose_name="Danh mục",
     )
     utilities = models.ManyToManyField(
-        Utility, blank=True, related_name="motel_rooms", verbose_name="Tiện ích"
+        Utility, 
+        blank=True, 
+        related_name="motel_rooms", 
+        verbose_name="Tiện ích"
     )
 
-    # Contact Information
-    contact_name = models.CharField(max_length=100, verbose_name="Tên liên hệ")
-    contact_phone = models.CharField(max_length=15, verbose_name="Số điện thoại")
-    contact_email = models.EmailField(blank=True, null=True, verbose_name="Email")
+    # --- Thông tin liên hệ ---
+    contact_name = models.CharField(
+        max_length=100, 
+        verbose_name="Tên liên hệ"
+    )
+    contact_phone = models.CharField(
+        max_length=15, 
+        verbose_name="Số điện thoại"
+    )
+    contact_email = models.EmailField(
+        blank=True, 
+        null=True, 
+        verbose_name="Email"
+    )
 
-    # Status & Ownership
+    # --- Trạng thái và chủ sở hữu ---
     status = models.IntegerField(
         choices=MOTEL_STATUS_CHOICES, 
         default=0,
@@ -232,12 +392,28 @@ class MotelRoom(models.Model):
         verbose_name="Người đăng",
     )
 
-    # Metadata
-    views = models.PositiveIntegerField(default=0, verbose_name="Lượt xem")
-    is_featured = models.BooleanField(default=False, verbose_name="Tin nổi bật")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày đăng")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Ngày cập nhật")
-    approved_at = models.DateTimeField(blank=True, null=True, verbose_name="Ngày duyệt")
+    # --- Metadata ---
+    views = models.PositiveIntegerField(
+        default=0, 
+        verbose_name="Lượt xem"
+    )
+    is_featured = models.BooleanField(
+        default=False, 
+        verbose_name="Tin nổi bật"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name="Ngày đăng"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True, 
+        verbose_name="Ngày cập nhật"
+    )
+    approved_at = models.DateTimeField(
+        blank=True, 
+        null=True, 
+        verbose_name="Ngày duyệt"
+    )
     
     objects = MotelRoomManager()
 
@@ -252,6 +428,7 @@ class MotelRoom(models.Model):
         ]
 
     def save(self, *args, **kwargs):
+        """Tự động tạo slug từ tiêu đề nếu chưa có"""
         if not self.slug:
             self.slug = unicode_slugify(self.title)
         super().save(*args, **kwargs)
@@ -261,10 +438,12 @@ class MotelRoom(models.Model):
 
     @property
     def is_approved(self):
+        """Kiểm tra tin đã được duyệt chưa"""
         return self.status == MOTEL_STATUS_APPROVED
     
     @property
     def status_badge(self):
+        """Trả về HTML badge hiển thị trạng thái"""
         badges = {
             0: '<span class="badge bg-warning">Chờ duyệt</span>',
             1: '<span class="badge bg-success">Đã duyệt</span>',
@@ -273,9 +452,15 @@ class MotelRoom(models.Model):
         return badges.get(self.status, '')
 
 
-class MotelImage(models.Model):
-    """Images for motel rooms"""
+# =============================================================================
+# MODEL HÌNH ẢNH PHÒNG TRỌ
+# =============================================================================
 
+class MotelImage(models.Model):
+    """
+    Model hình ảnh phòng trọ
+    Tự động resize ảnh: 1200x800 (chính), 400x300 (thumbnail)
+    """
     motel_room = models.ForeignKey(
         MotelRoom,
         on_delete=models.CASCADE,
@@ -296,10 +481,19 @@ class MotelImage(models.Model):
         options={"quality": 80},
     )
     caption = models.CharField(
-        max_length=255, blank=True, null=True, verbose_name="Chú thích"
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        verbose_name="Chú thích"
     )
-    is_primary = models.BooleanField(default=False, verbose_name="Ảnh chính")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày tải lên")
+    is_primary = models.BooleanField(
+        default=False, 
+        verbose_name="Ảnh chính"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name="Ngày tải lên"
+    )
 
     class Meta:
         verbose_name = "Hình ảnh phòng trọ"
@@ -307,12 +501,18 @@ class MotelImage(models.Model):
         ordering = ["-is_primary", "created_at"]
 
     def __str__(self):
-        return f"Image for {self.motel_room.title}"
+        return f"Ảnh của {self.motel_room.title}"
 
+
+# =============================================================================
+# MODEL YÊU THÍCH
+# =============================================================================
 
 class Favorite(models.Model):
-    """User favorites/bookmarks for motel rooms"""
-
+    """
+    Model yêu thích - Lưu danh sách phòng trọ user đã lưu
+    Mỗi user chỉ được yêu thích 1 phòng 1 lần (unique_together)
+    """
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -325,7 +525,10 @@ class Favorite(models.Model):
         related_name="favorited_by",
         verbose_name="Phòng trọ",
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày thêm")
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name="Ngày thêm"
+    )
 
     class Meta:
         verbose_name = "Yêu thích"
@@ -337,12 +540,18 @@ class Favorite(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username} favorites {self.motel_room.title}"
+        return f"{self.user.username} yêu thích {self.motel_room.title}"
 
+
+# =============================================================================
+# MODEL ĐÁNH GIÁ
+# =============================================================================
 
 class Review(models.Model):
-    """User reviews/ratings for motel rooms"""
-
+    """
+    Model đánh giá phòng trọ
+    Mỗi user chỉ được đánh giá 1 phòng 1 lần (có thể cập nhật)
+    """
     motel_room = models.ForeignKey(
         MotelRoom,
         on_delete=models.CASCADE,
@@ -359,9 +568,17 @@ class Review(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(5)],
         verbose_name="Đánh giá (1-5 sao)",
     )
-    comment = models.TextField(verbose_name="Nhận xét")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày đánh giá")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Ngày cập nhật")
+    comment = models.TextField(
+        verbose_name="Nhận xét"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name="Ngày đánh giá"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True, 
+        verbose_name="Ngày cập nhật"
+    )
 
     class Meta:
         verbose_name = "Đánh giá"
@@ -373,12 +590,18 @@ class Review(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user.username} - {self.rating}★ on {self.motel_room.title}"
+        return f"{self.user.username} - {self.rating}★ cho {self.motel_room.title}"
 
+
+# =============================================================================
+# MODEL BÁO CÁO VI PHẠM
+# =============================================================================
 
 class Report(models.Model):
-    """User reports for inappropriate listings"""
-    
+    """
+    Model báo cáo vi phạm
+    Cho phép user báo cáo tin đăng không phù hợp
+    """
     motel_room = models.ForeignKey(
         MotelRoom,
         on_delete=models.CASCADE,
@@ -396,15 +619,27 @@ class Report(models.Model):
         choices=REPORT_REASONS,
         verbose_name='Lý do'
     )
-    description = models.TextField(verbose_name="Mô tả chi tiết")
+    description = models.TextField(
+        verbose_name="Mô tả chi tiết"
+    )
     status = models.IntegerField(
         choices=REPORT_STATUS_CHOICES,
         default=0,
         verbose_name="Trạng thái",
     )
-    admin_note = models.TextField(blank=True, null=True, verbose_name="Ghi chú admin")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Ngày báo cáo")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Ngày cập nhật")
+    admin_note = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name="Ghi chú admin"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True, 
+        verbose_name="Ngày báo cáo"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True, 
+        verbose_name="Ngày cập nhật"
+    )
 
     class Meta:
         verbose_name = "Báo cáo"
@@ -412,4 +647,4 @@ class Report(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"Report by {self.reporter.username} on {self.motel_room.title}"
+        return f"Báo cáo của {self.reporter.username} về {self.motel_room.title}"

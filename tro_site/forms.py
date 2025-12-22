@@ -1,3 +1,8 @@
+"""
+Forms cho ứng dụng Tìm Trọ
+Định nghĩa các form để xử lý dữ liệu đầu vào từ người dùng
+"""
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Div, Field, Layout, Row, Submit
 from django import forms
@@ -6,12 +11,15 @@ from django.core.cache import cache
 from .models import User, MotelRoom, Report, Category, District, Review
 
 
-# Cache timeout for form querysets (5 minutes)
+# Thời gian cache cho queryset của form (5 phút)
 FORM_QUERYSET_CACHE_TIMEOUT = 300
 
 
 def get_cached_districts():
-    """Get districts queryset with caching"""
+    """
+    Lấy danh sách quận/huyện với caching
+    Giảm số lượng query đến database
+    """
     cache_key = 'form_districts_queryset'
     districts = cache.get(cache_key)
     if districts is None:
@@ -21,7 +29,10 @@ def get_cached_districts():
 
 
 def get_cached_categories():
-    """Get categories queryset with caching"""
+    """
+    Lấy danh sách danh mục với caching
+    Giảm số lượng query đến database
+    """
     cache_key = 'form_categories_queryset'
     categories = cache.get(cache_key)
     if categories is None:
@@ -30,10 +41,16 @@ def get_cached_categories():
     return categories
 
 
-class UserProfileForm(UserChangeForm):
-    """User profile edit form"""
+# =============================================================================
+# FORM THÔNG TIN CÁ NHÂN
+# =============================================================================
 
-    password = None  # Remove password field
+class UserProfileForm(UserChangeForm):
+    """
+    Form chỉnh sửa thông tin cá nhân
+    Loại bỏ trường password, chỉ cho phép sửa thông tin cơ bản
+    """
+    password = None  # Ẩn trường password
 
     class Meta:
         model = User
@@ -74,6 +91,7 @@ class UserProfileForm(UserChangeForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Cấu hình Crispy Forms
         self.helper = FormHelper()
         self.helper.form_method = "post"
         self.helper.form_enctype = "multipart/form-data"
@@ -96,8 +114,15 @@ class UserProfileForm(UserChangeForm):
         )
 
 
+# =============================================================================
+# FORM ĐĂNG TIN PHÒNG TRỌ
+# =============================================================================
+
 class MotelRoomForm(forms.ModelForm):
-    """Motel room creation/edit form"""
+    """
+    Form tạo/chỉnh sửa tin đăng phòng trọ
+    Bao gồm: thông tin cơ bản, giá, vị trí, tiện ích, liên hệ
+    """
 
     class Meta:
         model = MotelRoom
@@ -159,9 +184,15 @@ class MotelRoomForm(forms.ModelForm):
         }
 
 
-class MotelSearchForm(forms.Form):
-    """Advanced search form for motel rooms"""
+# =============================================================================
+# FORM TÌM KIẾM PHÒNG TRỌ
+# =============================================================================
 
+class MotelSearchForm(forms.Form):
+    """
+    Form tìm kiếm nâng cao cho phòng trọ
+    Hỗ trợ lọc theo: từ khóa, quận/huyện, danh mục, giá, diện tích
+    """
     q = forms.CharField(
         required=False,
         widget=forms.TextInput(
@@ -217,13 +248,20 @@ class MotelSearchForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Use cached querysets to avoid repeated DB queries
+        # Sử dụng queryset được cache để tránh query lặp lại
         self.fields["district"].queryset = District.objects.only('id', 'name').order_by('name')
         self.fields["category"].queryset = Category.objects.only('id', 'name').order_by('name')
 
 
+# =============================================================================
+# FORM ĐÁNH GIÁ
+# =============================================================================
+
 class ReviewForm(forms.ModelForm):
-    """Form for reviewing/rating motel rooms"""
+    """
+    Form đánh giá phòng trọ
+    Cho phép user đánh giá sao (1-5) và viết nhận xét
+    """
 
     class Meta:
         model = Review
@@ -251,8 +289,15 @@ class ReviewForm(forms.ModelForm):
         )
 
 
+# =============================================================================
+# FORM BÁO CÁO VI PHẠM
+# =============================================================================
+
 class ReportForm(forms.ModelForm):
-    """Form for reporting inappropriate listings"""
+    """
+    Form báo cáo tin đăng vi phạm
+    Cho phép user chọn lý do và mô tả chi tiết
+    """
 
     class Meta:
         model = Report
