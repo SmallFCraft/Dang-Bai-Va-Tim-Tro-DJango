@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tin đăng của tôi - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-list me-3"></i>Tin đăng của tôi
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item text-white active">Tin đăng</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- My Listings Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="glass-text-white mb-2">Quản lý tin đăng</h3>
+                <p class="glass-text-muted mb-0">Tổng cộng {{ page_obj.paginator.count }} tin đăng</p>
+            </div>
+            <a href="{% url 'motel_create' %}" class="btn btn-glass-primary">
+                <i class="fa fa-plus me-2"></i>Đăng tin mới
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for room in page_obj %}
+            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                {% include 'components/room_card.html' with room=room show_status=True show_edit=True show_delete=True %}
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="glass-card-light p-5">
+                    <i class="fa fa-home fa-4x text-primary mb-4"></i>
+                    <h4 class="glass-text-white mb-3">Bạn chưa có tin đăng nào</h4>
+                    <p class="glass-text-muted mb-4">Hãy đăng tin để cho thuê phòng trọ của bạn</p>
+                    <a href="{% url 'motel_create' %}" class="btn btn-glass-primary btn-lg">
+                        <i class="fa fa-plus me-2"></i>Đăng tin ngay
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Trước</a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Sau</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+<!-- My Listings End -->
+{% endblock %}

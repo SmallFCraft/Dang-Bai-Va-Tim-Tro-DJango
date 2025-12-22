@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tìm Trọ - Tìm kiếm phòng trọ nhanh chóng, dễ dàng{% endblock %}
+
+{% block content %}
+<!-- Carousel Start -->
+<div class="container-fluid p-0 mb-5">
+    <div class="owl-carousel header-carousel position-relative">
+        <div class="owl-carousel-item position-relative">
+            <img class="img-fluid" src="{% static 'client/img/carousel-1.jpg' %}" alt="">
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(24, 29, 56, .7);">
+                <div class="container">
+                    <div class="row justify-content-start">
+                        <div class="col-sm-10 col-lg-8">
+                            <h5 class="text-primary text-uppercase mb-3 animated slideInDown">Tìm phòng trọ dễ dàng</h5>
+                            <h1 class="display-3 text-white animated slideInDown">Nền tảng tìm kiếm phòng trọ hàng đầu</h1>
+                            <p class="fs-5 text-white mb-4 pb-2">Hàng ngàn phòng trọ chất lượng, giá cả phải chăng đang chờ bạn. Tìm kiếm nhanh chóng, đăng tin miễn phí!</p>
+                            <a href="{% url 'motel_list' %}" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Xem phòng trọ</a>
+                            {% if not user.is_authenticated %}
+                            <a href="{% url 'account_signup' %}" class="btn btn-light py-md-3 px-md-5 animated slideInRight">Đăng ký ngay</a>
+                            {% else %}
+                            <a href="{% url 'motel_create' %}" class="btn btn-light py-md-3 px-md-5 animated slideInRight">Đăng tin</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="owl-carousel-item position-relative">
+            <img class="img-fluid" src="{% static 'client/img/carousel-2.jpg' %}" alt="">
+            <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center" style="background: rgba(24, 29, 56, .7);">
+                <div class="container">
+                    <div class="row justify-content-start">
+                        <div class="col-sm-10 col-lg-8">
+                            <h5 class="text-primary text-uppercase mb-3 animated slideInDown">Đăng tin miễn phí</h5>
+                            <h1 class="display-3 text-white animated slideInDown">Cho thuê phòng trọ nhanh chóng</h1>
+                            <p class="fs-5 text-white mb-4 pb-2">Đăng tin cho thuê phòng trọ hoàn toàn miễn phí. Tiếp cận hàng nghìn người tìm trọ mỗi ngày!</p>
+                            <a href="{% url 'motel_list' %}" class="btn btn-primary py-md-3 px-md-5 me-3 animated slideInLeft">Tìm hiểu thêm</a>
+                            <a href="{% url 'motel_create' %}" class="btn btn-light py-md-3 px-md-5 animated slideInRight">Đăng tin ngay</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Carousel End -->
+
+<!-- Service Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="section-title glass-text-white text-center px-3">Tính năng</h6>
+            <h1 class="mb-3 glass-text-white">Tại sao chọn chúng tôi?</h1>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="glass-service-item animate-float">
+                    <i class="fa fa-3x fa-search mb-4"></i>
+                    <h5 class="mb-3">Tìm kiếm dễ dàng</h5>
+                    <p>Tìm phòng trọ theo khu vực, giá cả, diện tích với bộ lọc thông minh</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.3s">
+                <div class="glass-service-item animate-float">
+                    <i class="fa fa-3x fa-shield-alt mb-4"></i>
+                    <h5 class="mb-3">Tin cậy & An toàn</h5>
+                    <p>Mọi tin đăng đều được kiểm duyệt kỹ lưỡng trước khi hiển thị</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.5s">
+                <div class="glass-service-item animate-float">
+                    <i class="fa fa-3x fa-home mb-4"></i>
+                    <h5 class="mb-3">Đa dạng lựa chọn</h5>
+                    <p>Từ phòng trọ sinh viên đến chung cư cao cấp, đáp ứng mọi nhu cầu</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 wow fadeInUp" data-wow-delay="0.7s">
+                <div class="glass-service-item animate-float">
+                    <i class="fa fa-3x fa-dollar-sign mb-4"></i>
+                    <h5 class="mb-3">Miễn phí 100%</h5>
+                    <p>Đăng tin và tìm kiếm hoàn toàn miễn phí, không phí ẩn</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Service End -->
+
+<!-- Categories Start -->
+<div class="container-xxl py-5 category">
+    <div class="container">
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="section-title glass-text-white text-center px-3">Danh mục</h6>
+            <h1 class="mb-5 glass-text-white">Loại phòng trọ</h1>
+        </div>
+        <div class="row g-4">
+            {% for category in categories %}
+            <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.{{ forloop.counter }}s">
+                <a class="position-relative d-block overflow-hidden glass-card" href="{% url 'motel_list' %}?category={{ category.id }}" style="border-radius: 20px; text-decoration: none;">
+                    <img class="img-fluid" src="{% static 'client/img/cat-1.jpg' %}" alt="{{ category.name }}" style="height: 250px; object-fit: cover;">
+                    <div class="glass-card-light text-center position-absolute bottom-0 end-0 py-3 px-4" style="margin: 1rem; border-radius: 12px;">
+                        <h5 class="m-0 glass-text-white">{{ category.name }}</h5>
+                        <small class="text-primary fw-bold">{{ category.room_count }} phòng</small>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- Categories End -->
+
+<!-- Rooms Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="section-title glass-text-white text-center px-3">Phòng trọ</h6>
+            <h1 class="mb-5 glass-text-white">Phòng trọ nổi bật</h1>
+        </div>
+        <div class="row g-4 justify-content-center">
+            {% for room in featured_rooms %}
+            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                {% include 'components/room_card.html' with room=room %}
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="glass-text-white">Chưa có phòng trọ nào được đăng</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- Rooms End -->
+
+<!-- Latest Rooms Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="section-title glass-text-white text-center px-3">Mới nhất</h6>
+            <h1 class="mb-5 glass-text-white">Phòng trọ mới đăng</h1>
+        </div>
+        <div class="row g-4 justify-content-center">
+            {% for room in latest_rooms %}
+            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                {% include 'components/room_card.html' with room=room %}
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="glass-card-light p-5">
+                    <i class="fa fa-home fa-4x text-primary mb-4"></i>
+                    <h4 class="glass-text-white mb-3">Chưa có phòng trọ nào được đăng</h4>
+                    <p class="glass-text-muted">Hãy là người đầu tiên đăng tin</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'motel_list' %}" class="btn btn-glass-primary btn-lg py-3 px-5">
+                <i class="fa fa-th-large me-2"></i>Xem tất cả phòng trọ
+            </a>
+        </div>
+    </div>
+</div>
+<!-- Latest Rooms End -->
+
+<!-- Districts Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center wow fadeInUp" data-wow-delay="0.1s">
+            <h6 class="section-title glass-text-white text-center px-3">Khu vực</h6>
+            <h1 class="mb-5 glass-text-white">Tìm theo quận/huyện</h1>
+        </div>
+        <div class="row g-4">
+            {% for district in districts %}
+            <div class="col-lg-3 col-md-6 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                <div class="glass-card-light">
+                    <div class="text-center p-4">
+                        <div class="mb-3">
+                            <i class="fa fa-map-marker-alt fa-3x text-primary"></i>
+                        </div>
+                        <h5 class="mb-2 glass-text-white">{{ district.name }}</h5>
+                        <small class="text-primary fw-bold" data-count="{{ district.room_count }}">{{ district.room_count }}</small>
+                        <small class="glass-text-muted d-block mb-3">phòng trọ</small>
+                        <div class="mt-3">
+                            <a href="{% url 'motel_list' %}?district={{ district.id }}" class="btn btn-glass-primary btn-sm">Xem phòng</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- Districts End -->
+{% endblock %}

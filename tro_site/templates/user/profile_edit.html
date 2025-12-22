@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}Chỉnh sửa hồ sơ - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-user-edit me-3"></i>Chỉnh sửa hồ sơ
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'profile_view' user.username %}">Trang cá nhân</a></li>
+                        <li class="breadcrumb-item text-white active">Chỉnh sửa</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Edit Profile Form Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="glass-card-light rounded p-4 p-md-5 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="text-center mb-5">
+                        <h3 class="mb-2 glass-text-white">Thông tin cá nhân</h3>
+                        <p class="glass-text-muted">Cập nhật thông tin tài khoản của bạn</p>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Thông tin tài khoản -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-user me-2"></i>Thông tin tài khoản
+                                </h5>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.username.label }}</label>
+                                    {{ form.username }}
+                                    {% if form.username.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                                    {% endif %}
+                                    {% if form.username.help_text %}
+                                        <small class="form-text text-muted">{{ form.username.help_text }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.email.label }}</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.first_name.label }}</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.first_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.last_name.label }}</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.last_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thông tin liên hệ -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-phone me-2"></i>Thông tin liên hệ
+                                </h5>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.phone.label }}</label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">{{ form.avatar.label }}</label>
+                                    {{ form.avatar }}
+                                    {% if form.avatar.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.avatar.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Giới thiệu -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-info-circle me-2"></i>Thông tin bổ sung
+                                </h5>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">{{ form.bio.label }}</label>
+                                {{ form.bio }}
+                                {% if form.bio.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.bio.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">{{ form.address.label }}</label>
+                                {{ form.address }}
+                                {% if form.address.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.address.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="text-center pt-4 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+                            <button type="submit" class="btn btn-glass-primary btn-lg px-5 py-3 me-3">
+                                <i class="fa fa-save me-2"></i>Lưu thay đổi
+                            </button>
+                            <a href="{% url 'profile_view' user.username %}" class="btn btn-glass btn-lg px-5 py-3">
+                                <i class="fa fa-times me-2"></i>Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Edit Profile Form End -->
+{% endblock %}

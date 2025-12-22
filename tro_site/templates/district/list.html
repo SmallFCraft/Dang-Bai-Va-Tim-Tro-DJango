@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Khu vực - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-map-marked-alt me-3"></i>Khu vực
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item text-white active">Khu vực</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Districts Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h6 class="section-title glass-text-white text-center px-3">Quận/Huyện</h6>
+            <h1 class="mb-3 glass-text-white">Tìm phòng trọ theo khu vực</h1>
+        </div>
+        <div class="row g-4">
+            {% for district in districts %}
+            <div class="col-lg-3 col-md-4 col-sm-6 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                <a href="{% url 'motel_list' %}?district={{ district.id }}" class="text-decoration-none">
+                    <div class="glass-card-light text-center p-4 h-100">
+                        <div class="mb-3">
+                            <i class="fa fa-3x fa-map-marker-alt text-primary"></i>
+                        </div>
+                        <h5 class="mb-2 glass-text-white">{{ district.name }}</h5>
+                        <small class="text-primary fw-bold" data-count="{{ district.room_count }}">{{ district.room_count }}</small>
+                        <small class="glass-text-muted d-block">phòng trọ</small>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="glass-card-light p-5">
+                    <i class="fa fa-map-marked-alt fa-4x text-primary mb-4"></i>
+                    <h4 class="glass-text-white mb-3">Chưa có khu vực nào</h4>
+                    <p class="glass-text-muted">Hệ thống đang cập nhật khu vực</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- Districts End -->
+{% endblock %}

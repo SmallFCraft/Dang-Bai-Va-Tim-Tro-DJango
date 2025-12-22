@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}Chỉnh sửa tin đăng - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-edit me-3"></i>Chỉnh sửa tin đăng
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'motel_my_listings' %}">Tin của tôi</a></li>
+                        <li class="breadcrumb-item text-white active">Chỉnh sửa</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Form Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="glass-card-light rounded p-4 p-md-5 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="text-center mb-5">
+                        <h3 class="mb-2 glass-text-white">Chỉnh sửa tin đăng</h3>
+                        <p class="glass-text-muted">{{ room.title }}</p>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data" id="motelForm">
+                        {% csrf_token %}
+                        
+                        <!-- Copy toàn bộ sections từ create.html -->
+                        <!-- Thông tin cơ bản -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-info-circle me-2"></i>Thông tin cơ bản
+                                </h5>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Tiêu đề <span class="text-danger">*</span>
+                                </label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Mô tả chi tiết <span class="text-danger">*</span>
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Giá & Diện tích -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-dollar-sign me-2"></i>Giá & Diện tích
+                                </h5>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Giá thuê (VNĐ/tháng) <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.price }}
+                                    {% if form.price.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.price.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Diện tích (m²) <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.area }}
+                                    {% if form.area.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.area.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vị trí -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-map-marker-alt me-2"></i>Vị trí
+                                </h5>
+                            </div>
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Quận/Huyện <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.district }}
+                                    {% if form.district.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.district.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Loại phòng <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.category }}
+                                    {% if form.category.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.category.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Địa chỉ cụ thể <span class="text-danger">*</span>
+                                </label>
+                                {{ form.address }}
+                                {% if form.address.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.address.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Tiện ích -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-check-circle me-2"></i>Tiện ích
+                                </h5>
+                            </div>
+                            
+                            <div class="utilities-grid">
+                                {% for checkbox in form.utilities %}
+                                <div class="utility-item">
+                                    <div class="form-check">
+                                        {{ checkbox.tag }}
+                                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                                            {{ checkbox.choice_label }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.utilities.errors %}
+                                <div class="invalid-feedback d-block">{{ form.utilities.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Hình ảnh -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-images me-2"></i>Hình ảnh
+                                </h5>
+                            </div>
+                            
+                            <!-- Existing Images -->
+                            {% if room.images.all %}
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Hình ảnh hiện tại</label>
+                                <div class="row g-3">
+                                    {% for image in room.images.all %}
+                                    <div class="col-6 col-md-4 col-lg-3">
+                                        <div class="preview-item">
+                                            <img src="{{ image.image.url }}" alt="Image" loading="lazy">
+                                            {% if image.is_primary %}
+                                            <span class="badge bg-success position-absolute top-0 start-0 m-2">Ảnh chính</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Thêm hình ảnh mới
+                                </label>
+                                <input type="file" 
+                                       name="images" 
+                                       class="form-control form-control-lg" 
+                                       multiple 
+                                       accept="image/*"
+                                       id="imageInput">
+                                <small class="form-text text-muted d-block mt-2">
+                                    <i class="fa fa-info-circle me-1"></i>
+                                    Chọn nhiều ảnh để thêm vào tin đăng
+                                </small>
+                            </div>
+                            
+                            <div id="imagePreview" class="row g-3 mt-2"></div>
+                        </div>
+
+                        <!-- Thông tin liên hệ -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-phone me-2"></i>Thông tin liên hệ
+                                </h5>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">
+                                        Tên liên hệ <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.contact_name }}
+                                    {% if form.contact_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.contact_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">
+                                        Số điện thoại <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.contact_phone }}
+                                    {% if form.contact_phone.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.contact_phone.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">
+                                        Email
+                                    </label>
+                                    {{ form.contact_email }}
+                                    {% if form.contact_email.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.contact_email.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden fields -->
+                        {{ form.latitude }}
+                        {{ form.longitude }}
+
+                        <!-- Buttons -->
+                        <div class="text-center pt-4 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+                            <button type="submit" class="btn btn-glass-primary btn-lg px-5 py-3 me-3">
+                                <i class="fa fa-save me-2"></i>Cập nhật
+                            </button>
+                            <a href="{% url 'motel_my_listings' %}" class="btn btn-glass btn-lg px-5 py-3">
+                                <i class="fa fa-times me-2"></i>Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Form End -->
+
+{% block extra_js %}
+<script src="{% static 'client/js/forms.js' %}"></script>
+{% endblock %}
+{% endblock %}

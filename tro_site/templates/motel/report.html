@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}Báo cáo tin đăng - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-flag me-3"></i>Báo cáo tin đăng
+                </h1>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Report Form Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="glass-card-light rounded p-4 p-md-5 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="text-center mb-5">
+                        <h3 class="mb-2 glass-text-white">Báo cáo tin đăng vi phạm</h3>
+                        <p class="glass-text-muted">Giúp chúng tôi duy trì cộng đồng an toàn</p>
+                    </div>
+                    
+                    <div class="alert alert-info mb-4" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: var(--dark-text-primary);">
+                        <i class="fa fa-info-circle me-2"></i>
+                        <strong>Tin đăng:</strong> {{ room.title }}
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-section mb-5">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Lý do báo cáo <span class="text-danger">*</span>
+                                </label>
+                                {{ form.reason }}
+                                {% if form.reason.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.reason.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Mô tả chi tiết <span class="text-danger">*</span>
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Vui lòng mô tả chi tiết lý do báo cáo để chúng tôi xử lý nhanh hơn
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center pt-4 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+                            <button type="submit" class="btn btn-lg px-5 py-3 me-3" style="background: rgba(239, 68, 68, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(239, 68, 68, 0.5); color: white;">
+                                <i class="fa fa-flag me-2"></i>Gửi báo cáo
+                            </button>
+                            <a href="{% url 'motel_detail' room.slug %}" class="btn btn-glass btn-lg px-5 py-3">
+                                <i class="fa fa-times me-2"></i>Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Report Form End -->
+{% endblock %}

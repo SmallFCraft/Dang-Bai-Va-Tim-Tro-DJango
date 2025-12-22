@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ profile_user.username }} - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-user me-3"></i>Trang cá nhân
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item text-white active">{{ profile_user.username }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Profile Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Profile Info -->
+            <div class="col-lg-4">
+                <div class="glass-card-light p-4 sticky-top animate-glow" style="top: 100px;">
+                    <div class="text-center mb-4">
+                        {% if profile_user.avatar %}
+                        <div class="position-relative d-inline-block mb-3">
+                            <img src="{{ profile_user.avatar.url }}" class="rounded-circle" style="width: 150px; height: 150px; object-fit: cover; border: 4px solid rgba(6, 187, 204, 0.5);" alt="{{ profile_user.username }}">
+                            <div class="position-absolute bottom-0 end-0 bg-success rounded-circle" style="width: 30px; height: 30px; border: 3px solid var(--dark-bg-primary);"></div>
+                        </div>
+                        {% else %}
+                        <div class="position-relative d-inline-block mb-3">
+                            <div class="rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 150px; height: 150px; background: linear-gradient(135deg, rgba(6, 187, 204, 0.3), rgba(59, 130, 246, 0.3)); border: 4px solid rgba(6, 187, 204, 0.5);">
+                                <i class="fa fa-user fa-4x text-primary"></i>
+                            </div>
+                            <div class="position-absolute bottom-0 end-0 bg-success rounded-circle" style="width: 30px; height: 30px; border: 3px solid var(--dark-bg-primary);"></div>
+                        </div>
+                        {% endif %}
+                        <h3 class="glass-text-white mb-2">{{ profile_user.get_full_name|default:profile_user.username }}</h3>
+                        <p class="text-primary mb-0">@{{ profile_user.username }}</p>
+                    </div>
+
+                    {% if profile_user.bio %}
+                    <div class="mb-4 p-3 rounded" style="background: rgba(255, 255, 255, 0.05);">
+                        <h5 class="glass-text-white mb-3"><i class="fa fa-info-circle text-primary me-2"></i>Giới thiệu</h5>
+                        <p class="glass-text-muted mb-0">{{ profile_user.bio }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        <h5 class="glass-text-white mb-3"><i class="fa fa-address-card text-primary me-2"></i>Thông tin liên hệ</h5>
+                        <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.05);">
+                            <p class="mb-2 glass-text-white"><i class="fa fa-envelope text-primary me-2"></i>{{ profile_user.email }}</p>
+                            {% if profile_user.phone %}
+                            <p class="mb-2 glass-text-white"><i class="fa fa-phone text-primary me-2"></i>{{ profile_user.phone }}</p>
+                            {% endif %}
+                            {% if profile_user.address %}
+                            <p class="mb-2 glass-text-white"><i class="fa fa-map-marker-alt text-primary me-2"></i>{{ profile_user.address }}</p>
+                            {% endif %}
+                            <p class="mb-0 glass-text-muted"><i class="fa fa-calendar text-primary me-2"></i>Tham gia: {{ profile_user.created_at|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+
+                    {% if user == profile_user %}
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'profile_edit' %}" class="btn btn-glass-primary">
+                            <i class="fa fa-edit me-2"></i>Chỉnh sửa hồ sơ
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- User's Listings -->
+            <div class="col-lg-8">
+                <div class="mb-4">
+                    <h3 class="glass-text-white mb-2"><i class="fa fa-home text-primary me-2"></i>Tin đăng của {{ profile_user.username }}</h3>
+                    <p class="glass-text-muted">Tổng cộng {{ rooms|length }} tin đăng</p>
+                </div>
+                <div class="row g-4">
+                    {% for room in rooms %}
+                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                        {% include 'components/room_card.html' with room=room %}
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div class="glass-card-light p-5">
+                            <i class="fa fa-home fa-4x text-primary mb-4"></i>
+                            <h4 class="glass-text-white mb-3">Chưa có tin đăng nào</h4>
+                            <p class="glass-text-muted">Người dùng này chưa đăng phòng trọ nào</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Profile End -->
+{% endblock %}

@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block title %}Đăng tin phòng trọ - Tìm Trọ{% endblock %}
+
+
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-plus-circle me-3"></i>Đăng tin phòng trọ
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item text-white active">Đăng tin</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Form Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="glass-card-light rounded p-4 p-md-5 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="text-center mb-5">
+                        <h3 class="mb-2 glass-text-white">Thông tin phòng trọ</h3>
+                        <p class="glass-text-muted">Điền đầy đủ thông tin để tin đăng của bạn được duyệt nhanh hơn</p>
+                    </div>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fa fa-exclamation-triangle me-2"></i>
+                        <strong>Có lỗi xảy ra!</strong> Vui lòng kiểm tra lại thông tin.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data" id="motelForm">
+                        {% csrf_token %}
+                        
+                        <!-- Thông tin cơ bản -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-info-circle me-2"></i>Thông tin cơ bản
+                                </h5>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Tiêu đề <span class="text-danger">*</span>
+                                </label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.title.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Ví dụ: Phòng trọ giá rẻ gần ĐH Bách Khoa, đầy đủ tiện nghi
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Mô tả chi tiết <span class="text-danger">*</span>
+                                </label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.description.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Mô tả chi tiết về phòng trọ, tiện ích xung quanh, điều kiện thuê...
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Giá & Diện tích -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-dollar-sign me-2"></i>Giá & Diện tích
+                                </h5>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Giá thuê (VNĐ/tháng) <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.price }}
+                                    {% if form.price.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.price.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Diện tích (m²) <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.area }}
+                                    {% if form.area.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.area.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vị trí -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-map-marker-alt me-2"></i>Vị trí
+                                </h5>
+                            </div>
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Quận/Huyện <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.district }}
+                                    {% if form.district.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.district.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">
+                                        Loại phòng <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.category }}
+                                    {% if form.category.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.category.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Địa chỉ cụ thể <span class="text-danger">*</span>
+                                </label>
+                                {{ form.address }}
+                                {% if form.address.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.address.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Số nhà, tên đường, phường/xã
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Tiện ích -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-check-circle me-2"></i>Tiện ích
+                                </h5>
+                            </div>
+                            
+                            <div class="utilities-grid">
+                                {% for checkbox in form.utilities %}
+                                <div class="utility-item">
+                                    <div class="form-check">
+                                        {{ checkbox.tag }}
+                                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                                            {{ checkbox.choice_label }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.utilities.errors %}
+                                <div class="invalid-feedback d-block">{{ form.utilities.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Hình ảnh -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-images me-2"></i>Hình ảnh
+                                </h5>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Hình ảnh phòng trọ <span class="text-danger">*</span>
+                                </label>
+                                <input type="file" 
+                                       name="images" 
+                                       class="form-control form-control-lg" 
+                                       multiple 
+                                       accept="image/*" 
+                                       required
+                                       id="imageInput">
+                                <small class="form-text text-muted d-block mt-2">
+                                    <i class="fa fa-info-circle me-1"></i>
+                                    Chọn nhiều ảnh (tối thiểu 3 ảnh, tối đa 10 ảnh). Định dạng: JPG, PNG. Kích thước tối đa: 5MB/ảnh
+                                </small>
+                            </div>
+                            
+                            <div id="imagePreview" class="row g-3 mt-2"></div>
+                        </div>
+
+                        <!-- Thông tin liên hệ -->
+                        <div class="form-section mb-5">
+                            <div class="section-header mb-4">
+                                <h5 class="text-primary mb-0">
+                                    <i class="fa fa-phone me-2"></i>Thông tin liên hệ
+                                </h5>
+                            </div>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">
+                                        Tên liên hệ <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.contact_name }}
+                                    {% if form.contact_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.contact_name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">
+                                        Số điện thoại <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.contact_phone }}
+                                    {% if form.contact_phone.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.contact_phone.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">
+                                        Email
+                                    </label>
+                                    {{ form.contact_email }}
+                                    {% if form.contact_email.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.contact_email.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden fields -->
+                        {{ form.latitude }}
+                        {{ form.longitude }}
+
+                        <!-- Buttons -->
+                        <div class="text-center pt-4 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+                            <button type="submit" class="btn btn-glass-primary btn-lg px-5 py-3 me-3">
+                                <i class="fa fa-paper-plane me-2"></i>Đăng tin
+                            </button>
+                            <a href="{% url 'home' %}" class="btn btn-glass btn-lg px-5 py-3">
+                                <i class="fa fa-times me-2"></i>Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Form End -->
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'client/js/forms.js' %}"></script>
+{% endblock %}

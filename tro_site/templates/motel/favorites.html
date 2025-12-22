@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Yêu thích - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-heart me-3"></i>Phòng trọ yêu thích
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item text-white active">Yêu thích</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Favorites Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="mb-4">
+            <h3 class="glass-text-white mb-2"><i class="fa fa-heart text-danger me-2"></i>Danh sách yêu thích</h3>
+            <p class="glass-text-muted">{{ page_obj.paginator.count }} phòng trọ</p>
+        </div>
+        <div class="row g-4">
+            {% for favorite in page_obj %}
+            {% with room=favorite.motel_room %}
+            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                {% include 'components/room_card.html' with room=room show_favorite=True favorite_date=favorite.created_at %}
+            </div>
+            {% endwith %}
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="glass-card-light p-5">
+                    <i class="fa fa-heart fa-4x text-danger mb-4"></i>
+                    <h4 class="glass-text-white mb-3">Bạn chưa có phòng trọ yêu thích nào</h4>
+                    <p class="glass-text-muted mb-4">Hãy khám phá và lưu những phòng trọ bạn thích</p>
+                    <a href="{% url 'motel_list' %}" class="btn btn-glass-primary btn-lg">
+                        <i class="fa fa-search me-2"></i>Khám phá ngay
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Trước</a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Sau</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+<!-- Favorites End -->
+
+<script>
+// Override toggleFavorite for favorites page to remove card when unfavorited
+const originalToggleFavorite = window.toggleFavorite;
+window.toggleFavorite = function(slug, button, onSuccess) {
+    originalToggleFavorite(slug, button, function(data, btn) {
+        if (!data.favorited && btn) {
+            btn.closest('.col-lg-4').remove();
+            if (document.querySelectorAll('.col-lg-4').length === 0) {
+                location.reload();
+            }
+        }
+        if (onSuccess) onSuccess(data, btn);
+    });
+};
+</script>
+{% endblock %}

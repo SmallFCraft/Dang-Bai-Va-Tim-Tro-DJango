@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Danh sách phòng trọ - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-home me-3"></i>Danh sách phòng trọ
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item text-white active">Phòng trọ</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Search Form Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="glass-card-light rounded p-4 wow fadeInUp" data-wow-delay="0.1s">
+            <form method="get" action="{% url 'motel_list' %}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label glass-text-white mb-2">
+                            <i class="fa fa-search me-2"></i>Tìm kiếm
+                        </label>
+                        {{ form.q }}
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label glass-text-white mb-2">
+                            <i class="fa fa-map-marker-alt me-2"></i>Quận/Huyện
+                        </label>
+                        {{ form.district }}
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label glass-text-white mb-2">
+                            <i class="fa fa-tag me-2"></i>Danh mục
+                        </label>
+                        {{ form.category }}
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label glass-text-white mb-2">
+                            <i class="fa fa-dollar-sign me-2"></i>Giá từ
+                        </label>
+                        {{ form.price_min }}
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label glass-text-white mb-2">
+                            <i class="fa fa-dollar-sign me-2"></i>Giá đến
+                        </label>
+                        {{ form.price_max }}
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-glass-primary w-100 py-3">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Search Form End -->
+
+<!-- Rooms List Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h6 class="section-title glass-text-white text-center px-3">Kết quả</h6>
+            <h1 class="mb-3 glass-text-white">Tìm thấy <span class="text-primary" data-count="{{ total_count }}">{{ total_count }}</span> phòng trọ</h1>
+        </div>
+        <div class="row g-4">
+            {% for room in page_obj %}
+            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.{{ forloop.counter }}s">
+                {% include 'components/room_card.html' with room=room %}
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="glass-card-light p-5">
+                    <i class="fa fa-search fa-4x text-primary mb-4"></i>
+                    <h4 class="glass-text-white mb-3">Không tìm thấy phòng trọ nào phù hợp</h4>
+                    <p class="glass-text-muted mb-4">Hãy thử điều chỉnh bộ lọc tìm kiếm của bạn</p>
+                    <a href="{% url 'motel_list' %}" class="btn btn-glass-primary">Xem tất cả</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Trước</a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Sau</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+<!-- Rooms List End -->
+{% endblock %}

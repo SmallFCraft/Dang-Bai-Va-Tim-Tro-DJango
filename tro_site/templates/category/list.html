@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Danh mục - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-tag me-3"></i>Danh mục
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item text-white active">Danh mục</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Categories Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h6 class="section-title glass-text-white text-center px-3">Loại phòng</h6>
+            <h1 class="mb-3 glass-text-white">Tìm phòng trọ theo danh mục</h1>
+        </div>
+        <div class="row g-4">
+            {% for category in categories %}
+            <div class="col-lg-4 col-md-6 wow zoomIn" data-wow-delay="0.{{ forloop.counter }}s">
+                <a class="position-relative d-block overflow-hidden glass-card text-decoration-none" href="{% url 'motel_list' %}?category={{ category.id }}" style="border-radius: 20px;">
+                    <img class="img-fluid" src="{% static 'client/img/cat-1.jpg' %}" alt="{{ category.name }}" style="height: 280px; object-fit: cover;">
+                    <div class="glass-card-light text-center position-absolute bottom-0 end-0 py-3 px-4" style="margin: 1rem; border-radius: 12px;">
+                        <h5 class="m-0 glass-text-white">{{ category.name }}</h5>
+                        <small class="text-primary fw-bold" data-count="{{ category.room_count }}">{{ category.room_count }}</small>
+                        <small class="glass-text-muted d-block">phòng trọ</small>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="glass-card-light p-5">
+                    <i class="fa fa-tag fa-4x text-primary mb-4"></i>
+                    <h4 class="glass-text-white mb-3">Chưa có danh mục nào</h4>
+                    <p class="glass-text-muted">Hệ thống đang cập nhật danh mục</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<!-- Categories End -->
+{% endblock %}

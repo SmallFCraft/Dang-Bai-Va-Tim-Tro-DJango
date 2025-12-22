@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Đăng ký - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-user-plus me-3"></i>Đăng ký
+                </h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center">
+                        <li class="breadcrumb-item"><a class="text-white" href="{% url 'home' %}">Trang chủ</a></li>
+                        <li class="breadcrumb-item text-white active">Đăng ký</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Signup Form Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="glass-card-light rounded p-5 wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="text-center mb-4">
+                        <div class="mb-3">
+                            <i class="fa fa-user-plus fa-4x text-primary"></i>
+                        </div>
+                        <h3 class="mb-2 glass-text-white">Tạo tài khoản mới</h3>
+                        <p class="glass-text-muted">Đăng ký để bắt đầu tìm trọ</p>
+                    </div>
+                    
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <strong>Lỗi!</strong> Vui lòng kiểm tra lại thông tin đăng ký.
+                        <ul class="mb-0 mt-2">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'account_signup' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+                            <input type="text" name="username" class="form-control" id="id_username" 
+                                   placeholder="Chọn tên đăng nhập" required
+                                   value="{{ form.username.value|default:'' }}">
+                            <small class="text-muted">Chỉ sử dụng chữ cái, số và @/./+/-/_</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" id="id_email" 
+                                   placeholder="email@example.com" required
+                                   value="{{ form.email.value|default:'' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_password1" class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                            <input type="password" name="password1" class="form-control" id="id_password1" 
+                                   placeholder="Nhập mật khẩu" required>
+                            <small class="text-muted">Tối thiểu 8 ký tự, không được toàn số</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_password2" class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                            <input type="password" name="password2" class="form-control" id="id_password2" 
+                                   placeholder="Nhập lại mật khẩu" required>
+                        </div>
+
+                        {% if redirect_field_value %}
+                        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                        {% endif %}
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-glass-primary btn-lg">
+                                <i class="fa fa-user-plus me-2"></i>Đăng ký
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4" style="border-color: rgba(255, 255, 255, 0.1);">
+
+                    <div class="text-center">
+                        <p class="mb-0 glass-text-white">Đã có tài khoản? 
+                            <a href="{% url 'account_login' %}" class="text-primary fw-bold">Đăng nhập ngay</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Signup Form End -->
+{% endblock %}

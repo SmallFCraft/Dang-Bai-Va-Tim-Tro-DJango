@@ -1,0 +1,161 @@
+{% load static %}
+
+{# Component: Glass Room Card #}
+{# Usage: include 'components/room_card.html' with room=room show_favorite=True show_status=False #}
+{# Parameters: #}
+{# - room: The room object (required) #}
+{# - show_favorite: Show favorite button (default: False) #}
+{# - show_status: Show status badge (default: False) #}
+{# - show_featured: Show featured badge (default: True if room.is_featured) #}
+{# - show_new_badge: Show "New" badge (default: False) #}
+{# - show_owner: Show owner name (default: True) #}
+{# - show_views: Show view count (default: True) #}
+{# - show_edit: Show edit button (default: False) #}
+{# - show_delete: Show delete button (default: False) #}
+{# - show_contact: Show contact button (default: False) #}
+{# - favorite_date: Date to show for favorites (optional) #}
+{# - custom_actions: Custom action buttons HTML (optional) #}
+{# - is_favorited: Whether room is favorited by current user (optional, for favorite button state) #}
+
+<div class="glass-room-card h-100" data-room-slug="{{ room.slug }}">
+    <div class="card-img-wrapper position-relative overflow-hidden">
+        {# Room Image #}
+        {% if room.images.first %}
+        <img class="img-fluid w-100" src="{{ room.images.first.image.url }}" alt="{{ room.title }}" style="height: 250px; object-fit: cover;">
+        {% else %}
+        <img class="img-fluid w-100" src="{% static 'client/img/course-1.jpg' %}" alt="{{ room.title }}" style="height: 250px; object-fit: cover;">
+        {% endif %}
+        
+        {# Status Badge (highest priority - shows first) #}
+        {% if show_status %}
+        <span class="position-absolute top-0 start-0 m-3 px-3 py-2 badge
+            {% if room.status == 0 %}bg-warning{% elif room.status == 1 %}bg-success{% else %}bg-danger{% endif %}" 
+            style="border-radius: 12px; z-index: 5;">
+            {% if room.status == 0 %}
+                <i class="fa fa-clock me-1"></i>Chờ duyệt
+            {% elif room.status == 1 %}
+                <i class="fa fa-check me-1"></i>Đã duyệt
+            {% else %}
+                <i class="fa fa-times me-1"></i>Từ chối
+            {% endif %}
+        </span>
+        {% elif show_new_badge %}
+        {# New Badge (second priority) #}
+        <span class="position-absolute top-0 start-0 badge bg-success px-3 py-2 m-3" style="border-radius: 12px; z-index: 5;">
+            <i class="fa fa-clock me-1"></i>Mới
+        </span>
+        {% elif room.is_featured and show_featured|default:True %}
+        {# Featured Badge (lowest priority - only shows if no other badge) #}
+        <span class="position-absolute top-0 start-0 badge bg-primary px-3 py-2 m-3" style="border-radius: 12px; z-index: 5;">
+            <i class="fa fa-star me-1"></i>Nổi bật
+        </span>
+        {% endif %}
+        
+        {# Favorite Button #}
+        {% if show_favorite %}
+        <button class="position-absolute top-0 end-0 m-3 btn btn-sm px-3 py-2" 
+                style="background: rgba(239, 68, 68, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 12px; color: white; z-index: 10;"
+                onclick="toggleFavorite('{{ room.slug }}', this)">
+            <i class="fa fa-heart me-1"></i>Bỏ thích
+        </button>
+        {% endif %}
+        
+        {# Favorite Heart Button (top right, only for authenticated users) #}
+        {% if user.is_authenticated and not show_favorite %}
+        {% if favorited_room_ids and room.id in favorited_room_ids %}
+            <button class="position-absolute top-0 end-0 m-3 btn btn-sm px-3 py-2 favorite-btn-card favorited" 
+                    data-room-slug="{{ room.slug }}"
+                    data-is-favorited="true"
+                    style="background: rgba(239, 68, 68, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 12px; color: white; z-index: 10; transition: all 0.3s ease;"
+                    onclick="toggleFavoriteCard('{{ room.slug }}', this)">
+                <i class="fas fa-heart"></i>
+            </button>
+        {% else %}
+            <button class="position-absolute top-0 end-0 m-3 btn btn-sm px-3 py-2 favorite-btn-card" 
+                    data-room-slug="{{ room.slug }}"
+                    data-is-favorited="false"
+                    style="background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 12px; color: white; z-index: 10; transition: all 0.3s ease;"
+                    onclick="toggleFavoriteCard('{{ room.slug }}', this)">
+                <i class="far fa-heart"></i>
+            </button>
+        {% endif %}
+        {% endif %}
+        
+        {# Card Overlay with Actions #}
+        <div class="card-overlay">
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% url 'motel_detail' room.slug %}" class="btn btn-glass btn-sm px-3">
+                    <i class="fa fa-eye me-2"></i>Xem chi tiết
+                </a>
+                {% if show_contact %}
+                <a href="{% url 'profile_view' room.owner.username %}" class="btn btn-glass btn-sm px-3">Liên hệ</a>
+                {% endif %}
+                
+                {% if custom_actions %}
+                {{ custom_actions|safe }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    {# Card Body #}
+    <div class="card-body text-center p-4">
+        {# Price #}
+        <h3 class="mb-2 text-primary fw-bold">{{ room.price|floatformat:0 }} VNĐ</h3>
+        <small class="glass-text-muted d-block mb-3">/ tháng</small>
+        
+        {# Location and Area #}
+        <div class="mb-3">
+            <small class="glass-text-muted">
+                <i class="fa fa-map-marker-alt me-1 text-primary"></i>{{ room.district.name }}
+            </small>
+            <small class="glass-text-muted ms-3">
+                <i class="fa fa-expand-arrows-alt me-1 text-primary"></i>{{ room.area }} m²
+            </small>
+        </div>
+        
+        {# Title #}
+        <h5 class="mb-3 glass-text-white">{{ room.title|truncatewords:10 }}</h5>
+        
+        {# Footer Info #}
+        <div class="d-flex justify-content-around border-top pt-3" style="border-color: rgba(255,255,255,0.1) !important;">
+            {% if show_owner|default:True %}
+            <small class="glass-text-muted">
+                <i class="fa fa-user text-primary me-1"></i>{{ room.owner.username }}
+            </small>
+            {% endif %}
+            {% if show_views|default:True %}
+            <small class="glass-text-muted">
+                <i class="fa fa-eye text-primary me-1"></i>{{ room.views }}
+            </small>
+            {% endif %}
+            {% if favorite_date %}
+            <small class="glass-text-muted">
+                <i class="fa fa-calendar text-primary me-1"></i>{{ favorite_date|date:"d/m/Y" }}
+            </small>
+            {% endif %}
+            {% if show_status and not favorite_date %}
+            <small class="glass-text-muted">
+                <i class="fa fa-calendar text-primary me-1"></i>{{ room.created_at|date:"d/m" }}
+            </small>
+            {% endif %}
+        </div>
+        
+        {# Edit and Delete Buttons #}
+        {% if show_edit or show_delete %}
+        <div class="mt-3 pt-3 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+            {% if show_edit %}
+            <a href="{% url 'motel_edit' room.slug %}" class="btn btn-glass btn-sm me-2">
+                <i class="fa fa-edit me-2"></i>Sửa
+            </a>
+            {% endif %}
+            {% if show_delete %}
+            <a href="{% url 'motel_delete' room.slug %}" class="btn btn-glass btn-sm w-100 mt-2" onclick="return confirm('Bạn có chắc muốn xóa tin đăng này?')">
+                <i class="fa fa-trash me-2"></i>Xóa tin đăng
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+

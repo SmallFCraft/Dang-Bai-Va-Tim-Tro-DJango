@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Xóa tin đăng - Tìm Trọ{% endblock %}
+
+{% block content %}
+<!-- Header Start -->
+<div class="container-fluid py-5 mb-5 page-header">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 text-center">
+                <h1 class="display-3 text-white animated slideInDown">
+                    <i class="fa fa-trash me-3"></i>Xóa tin đăng
+                </h1>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Header End -->
+
+<!-- Confirm Delete Start -->
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="glass-card-light rounded p-5 text-center wow fadeInUp" data-wow-delay="0.1s">
+                    <div class="mb-4">
+                        <i class="fa fa-exclamation-triangle fa-4x text-danger animate-pulse"></i>
+                    </div>
+                    <h3 class="mb-4 glass-text-white">Xác nhận xóa tin đăng</h3>
+                    <p class="mb-4 glass-text-muted">Bạn có chắc chắn muốn xóa tin đăng:</p>
+                    <div class="p-3 mb-4 rounded" style="background: rgba(6, 187, 204, 0.1);">
+                        <h5 class="text-primary mb-0">{{ room.title }}</h5>
+                    </div>
+                    <div class="alert alert-danger mb-4" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: var(--dark-text-primary);">
+                        <i class="fa fa-exclamation-circle me-2"></i>
+                        <strong>Cảnh báo:</strong> Hành động này không thể hoàn tác!
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-3">
+                            <button type="submit" class="btn btn-lg" style="background: rgba(239, 68, 68, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(239, 68, 68, 0.5); color: white;">
+                                <i class="fa fa-trash me-2"></i>Xác nhận xóa
+                            </button>
+                            <a href="{% url 'motel_my_listings' %}" class="btn btn-glass btn-lg">
+                                <i class="fa fa-times me-2"></i>Hủy bỏ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Confirm Delete End -->
+{% endblock %}
