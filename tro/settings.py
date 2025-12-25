@@ -177,7 +177,7 @@ AUTHENTICATION_BACKENDS = [
 # Django-allauth settings
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "optional"
+ACCOUNT_EMAIL_VERIFICATION = "none"  # Tắt xác nhận email
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_LOGOUT_ON_GET = True  # Logout without confirmation
 LOGIN_REDIRECT_URL = "/"
@@ -279,7 +279,7 @@ JAZZMIN_SETTINGS = {
     "related_modal_active": True,
     
     # UI Tweaks
-    "custom_css": None,
+    "custom_css": "admin/css/custom_admin.css",
     "custom_js": None,
     "use_google_fonts_cdn": True,
     "show_ui_builder": False,

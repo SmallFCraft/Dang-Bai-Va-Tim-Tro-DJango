@@ -1,0 +1,110 @@
+/**
+ * Custom CSS cho Django Admin (Jazzmin Dark Theme)
+ * Fix các vấn đề hiển thị với dark theme
+ */
+
+/* ============================================
+   FIX: filter_horizontal widget (Tiện ích)
+   Text màu trắng trên nền trắng -> đổi thành màu tối
+   ============================================ */
+
+/* Select box trong filter_horizontal */
+.selector-available select,
+.selector-chosen select,
+.selector select {
+    color: #212529 !important;
+    background-color: #fff !important;
+}
+
+/* Option trong select */
+.selector-available select option,
+.selector-chosen select option,
+.selector select option {
+    color: #212529 !important;
+    background-color: #fff !important;
+}
+
+/* Option được chọn */
+.selector-available select option:checked,
+.selector-chosen select option:checked,
+.selector select option:checked {
+    color: #fff !important;
+    background-color: #375a7f !important;
+}
+
+/* Hover state */
+.selector-available select option:hover,
+.selector-chosen select option:hover,
+.selector select option:hover {
+    background-color: #e9ecef !important;
+}
+
+/* Header của selector */
+.selector-available h2,
+.selector-chosen h2 {
+    color: #fff !important;
+    background-color: #375a7f !important;
+}
+
+/* Filter input */
+.selector-filter input[type="text"] {
+    color: #212529 !important;
+    background-color: #fff !important;
+    border: 1px solid #ced4da !important;
+}
+
+/* Placeholder */
+.selector-filter input[type="text"]::placeholder {
+    color: #6c757d !important;
+}
+
+/* ============================================
+   FIX: Các input fields khác trong admin
+   ============================================ */
+
+/* Text inputs */
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="url"],
+input[type="tel"],
+textarea,
+select {
+    color: #212529 !important;
+}
+
+/* Select dropdown */
+select.form-control,
+.form-group select {
+    color: #212529 !important;
+    background-color: #fff !important;
+}
+
+/* ============================================
+   FIX: Related widget wrapper
+   ============================================ */
+.related-widget-wrapper select {
+    color: #212529 !important;
+    background-color: #fff !important;
+}
+
+/* ============================================
+   FIX: Autocomplete widget
+   ============================================ */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #212529 !important;
+}
+
+.select2-container--default .select2-results__option {
+    color: #212529 !important;
+}
+
+/* ============================================
+   FIX: Inline forms
+   ============================================ */
+.inline-group .tabular td input,
+.inline-group .tabular td select,
+.inline-group .tabular td textarea {
+    color: #212529 !important;
+}
